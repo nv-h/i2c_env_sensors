@@ -1,14 +1,16 @@
-# Raspberry PI 4でCCS811/BME280を動かす
+# CCS811/BME280 on Raspberry PI 4
 
-I2Cで接続したCCS811とBME280を動かして、センサの値を読めるようにする。
+This document is to read sensor value of CCS811 and BME280 connected by I2C.
 
-* CCS811: VOC(揮発性有機化合物)を検出するガスセンサで、等価CO2濃度(eCO2)を計算できる。
-* BME280: 温度、湿度、気圧を測定できるセンサ
+* CCS811: ultra-low power digital gas sensor  
+     outputs: The equivalent CO2 (eCO2) and The Total Volatile Organic Compound (TVOC)
+* BME280: Combined humidity and pressure sensor  
+     outputs: humidity and pressure and temprature
 
-## I2Cでの接続確認
+## Check I2C connection
 
-`i2c-tools`をインストールして、接続されているか確認する。  
-デフォルトで0x5BにCCS811、0x77にBME280が見えればOK。今回は特に問題なし。
+Install `i2c-tools`, and check the connection.  
+CCS811 is address 0x5B (default), BME280 is address 0x77 (default).
 
 ```sh
 $ sudo apt install i2c-tools
@@ -26,7 +28,8 @@ $ sudo i2cdetect -y 1
 70: -- -- -- -- -- -- -- 77
 ```
 
-こんな感じのスクリプトでIDを確認できる。
+You can check hardware ID by script bellow.  
+The connection is OK, if hardware ID is correct.
 
 ```bash
 #!/bin/bash
@@ -54,20 +57,33 @@ bme280_hw_id=$(i2cget -y ${I2C_BUS} ${BME280} 0xd0)
 echo "BME280 HW_ID: ${bme280_hw_id}"
 ```
 
-## Pythonで値を読んでみる
+## Read the sensor values
 
-I2Cデバイス(`/dev/i2c-1`とか)は、i2cグループに属していれば権限がいらないので、自分をi2cグループに追加しておく。(毎回sudoするのが面倒なので)
+I2C devices such as `/dev/i2c-1` do not need permission if you belong in i2c groupe. So add yourself to the i2c groupe. (Because I don't want to sudo every time.)
 
 ```sh
 sudo usermod -aG i2c $USER
 ```
 
-また、`smbus2`が必要なので、事前にpipでインストールしておく。
+And Install `smbus2` package that is required by python program to communicate by i2c.
 
 ```sh
 pip install smbus2
 ```
 
-単純に値を読むだけであれば、動作確認のときのようにbashなどのスクリプトで済ますことができるが、BME280はキャリブレーション値の反映とかで少し煩雑だったので、[Switch Scienceさんのコード(MIT License)](https://github.com/SWITCHSCIENCE/samplecodes/blob/master/BME280/Python27/bme280_sample.py)を参考にした。
+Use this repository's code and read the values.
 
+```python
+from bme280 import BME280
 
+bme280 = BME280()
+p, t, h = bme280.get()
+print(f"{p:7.2f} hPa, {t:6.2f} C, {h:5.2f} %")
+
+from ccs811 import CCS811
+
+ccs811 = CCS811()
+ccs811.compensate(h, t) # if needed
+voc, co2 = ccs811.get() # May need to exec several times to get correct values
+print(f"TVOC:{voc:4d} ppb, eCO2:{co2:4d} ppm")
+```
