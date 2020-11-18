@@ -26,8 +26,7 @@
 from smbus2 import SMBus
 
 class BME280:
-    """
-    BME280
+    """BME280: Combined humidity and pressure sensor
     https://cdn.sparkfun.com/assets/learn_tutorials/4/1/9/BST-BME280_DS001-10.pdf
 
     Settings and performance for indoor navigation
@@ -50,8 +49,11 @@ class BME280:
         self.i2c = SMBus(bus_num)
         self.i2c_address = i2c_address
         self.t_fine = 0.0
+        self.pressure = 0.0
+        self.temperature = 0.0
+        self.humidity = 0.0
 
-        # 固定の設定
+        # Fixed settings
         osrs_t = 2 # Temperature oversampling x2
         osrs_p = 5 # Pressure oversampling x16
         osrs_h = 1 # Humidity oversampling x1
@@ -68,7 +70,7 @@ class BME280:
 
     def _get_calib_param(self):
         calib = []
-        # 呼ばれるごとに更新
+        # Update by every call
         self.digT = []
         self.digP = []
         self.digH = []
@@ -122,11 +124,13 @@ class BME280:
         temp_raw = (data[3] << 12) | (data[4] << 4) | (data[5] >> 4)
         hum_raw  = (data[6] << 8)  |  data[7]
 
-        temperature = self._compensate_T(temp_raw) # 先にt_fineを更新
-        pressure = self._compensate_P(pres_raw)
-        humidity = self._compensate_H(hum_raw)
+        self.temperature = self._compensate_T(temp_raw) # update t_fine first
+        if pres_raw < 0x80000:
+            # Sometimes get strange value
+            self.pressure = self._compensate_P(pres_raw)
+        self.humidity = self._compensate_H(hum_raw)
 
-        return pressure, temperature, humidity
+        return self.pressure, self.temperature, self.humidity
 
 
     def _compensate_P(self, adc_P):
@@ -193,4 +197,4 @@ class BME280:
 if __name__ == '__main__':
     bme280 = BME280()
     p, t, h = bme280.get()
-    print(f"{p:.2f} hPa, {t:.2f} C, {h:.2f} %")
+    print(f"{p:7.2f} hPa, {t:6.2f} C, {h:5.2f} %")
