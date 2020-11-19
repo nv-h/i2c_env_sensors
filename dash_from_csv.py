@@ -8,6 +8,9 @@ import plotly.express as px
 import pandas as pd
 import numpy as np
 
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
 import os
 
 CSV_FILENAME = './dump_data.csv'
@@ -17,11 +20,27 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 # assume you have a "long-form" data frame
 # see https://plotly.com/python/px-arguments/ for more options
-df = pd.read_csv(CSV_FILENAME)
-fig = px.line(df, x='Date', y=[' CO2 ppm', ' Celsius', ' Humidity %', ' Pressure hPa'])
-fig.update_xaxes(
-    rangeslider_visible=True,
-)
+def create_fig(csv_file):
+    df = pd.read_csv(csv_file)
+    fig = make_subplots(
+        rows=2, cols=1, specs=[[{"secondary_y": True}], [{"secondary_y": True}]],)
+    fig.add_trace(
+        go.Scatter(x=df['Date'], y=df[' Pressure hPa'], name='Pressure hPa'),
+        secondary_y=True, row=1, col=1)
+    fig.add_trace(
+        go.Scatter(x=df['Date'], y=df[' CO2 ppm'], name='CO2 ppm'),
+        secondary_y=False, row=1, col=1)
+    fig.add_trace(
+        go.Scatter(x=df['Date'], y=df[' Humidity %'], name='Humidity %'),
+        secondary_y=True, row=2, col=1)
+    fig.add_trace(
+        go.Scatter(x=df['Date'], y=df[' Celsius'], name='Celsius'),
+        secondary_y=False, row=2, col=1)
+    fig.update_layout(height=600)
+
+    return fig
+
+fig = create_fig(CSV_FILENAME)
 
 app.layout = html.Div(children=[
     html.H1(
@@ -46,6 +65,7 @@ app.layout = html.Div(children=[
     ),
     dcc.Graph(
         id='graph', figure=fig,
+        responsive='auto',
     ),
 ])
 
@@ -54,11 +74,7 @@ app.layout = html.Div(children=[
     [dash.dependencies.Input('update-button', 'n_clicks')],
 )
 def update_csv(n_clicks):
-    df = pd.read_csv(CSV_FILENAME)
-    fig = px.line(df, x='Date', y=[' CO2 ppm', ' Celsius', ' Humidity %', ' Pressure hPa'])
-    fig.update_xaxes(
-        rangeslider_visible=True,
-    )
+    fig = create_fig(CSV_FILENAME)
     return fig
 
 if __name__ == '__main__':
