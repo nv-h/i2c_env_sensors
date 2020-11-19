@@ -29,9 +29,6 @@ df = pd.DataFrame(
     index=[datetime.now()],
 )
 fig = px.line(df)
-fig.update_xaxes(
-    rangeslider_visible=True,
-)
 
 app.layout = html.Div(children=[
     html.H1(
@@ -64,15 +61,12 @@ def update(n_intervals):
     try:
         p, t, h = bme280.get()
         voc, co2 = ccs811.get()
-        df.loc[datetime.now()] = [co2, t, h, p] # 行追加
+        df.loc[datetime.now()] = [co2, t, h, p] # Add column
     except OSError:
-        # 更新しない
+        # No update
         pass
 
     fig = px.line(df)
-    fig.update_xaxes(
-        rangeslider_visible=True,
-    )
     return fig
 
 if __name__ == '__main__':
