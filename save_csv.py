@@ -23,11 +23,12 @@ with open(CSV_FILENAME, 'a') as f:
         try:
             p, t, h = bme280.get()
             voc, co2 = ccs811.get()
+            ccs811.compensate(h, t)
             if co2 == 0:
                 continue
-
-            print(f"{p:7.2f} hPa, {t:6.2f} C, {h:5.2f} %, TVOC:{voc:4d} ppb, eCO2:{co2:4d} ppm")
-            f.write(f"{datetime.now()}, {co2}, {t}, {h}, {p}\n")
+            now = datetime.now()
+            print(f"{now.isoformat()}, {p:7.2f} hPa, {t:6.2f} C, {h:5.2f} %, eCO2:{co2:4d} ppm")
+            f.write(f"{now}, {co2}, {t}, {h}, {p}\n")
             f.flush()
             sleep(60)
         except OSError:
