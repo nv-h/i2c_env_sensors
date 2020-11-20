@@ -46,7 +46,8 @@ app.layout = html.Div(children=[
 
     dcc.Graph(
         id='graph',
-        figure=fig
+        figure=fig,
+        responsive='auto',
     ),
 
     dcc.Interval(
@@ -63,7 +64,7 @@ def update(n_intervals):
     try:
         p, t, h = bme280.get()
         voc, co2 = ccs811.get()
-        df.loc[datetime.now()] = [co2, t, h, p] # Add column
+        df.loc[datetime.now()] = [co2, t, h, p] # Add row
     except OSError:
         # No update
         pass
