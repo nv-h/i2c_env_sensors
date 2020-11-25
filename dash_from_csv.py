@@ -51,7 +51,7 @@ def create_fig(csv_file):
             x=0, y=1.06,
         ),
         xaxis=dict(
-            range = [datetime.now()-timedelta(days=2), datetime.now()],
+            range = [df.index[-1]-timedelta(days=2), df.index[-1]],
             rangeslider=dict(
                 autorange=True,
             ),
