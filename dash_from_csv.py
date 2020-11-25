@@ -10,10 +10,13 @@ import numpy as np
 
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from datetime import datetime, timedelta
 
 import os
 
 CSV_FILENAME = './dump_data.csv'
+TIMEZONE = 'Asia/Tokyo'
+CELSIUS_OFFSET = 2 # generated heat by the board
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
@@ -22,32 +25,59 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 # see https://plotly.com/python/px-arguments/ for more options
 def create_fig(csv_file):
     df = pd.read_csv(csv_file)
-    fig = make_subplots(
-        rows=2, cols=1, specs=[[{"secondary_y": True}], [{"secondary_y": True}]],
-        shared_xaxes=True, vertical_spacing=0.02)
+    df = df.set_index('Date')
+    df.index = pd.to_datetime(df.index)
+    df.index = df.index.tz_localize('UTC')
+    df.index = df.index.tz_convert(TIMEZONE)
+
+    fig = go.Figure()
     fig.add_trace(
-        go.Scatter(x=df['Date'], y=df[' Pressure hPa'], name='Pressure hPa', yaxis="y",),
-        secondary_y=True, row=1, col=1)
+        go.Scatter(x=df.index, y=df[' Pressure hPa'], name='Pressure hPa', yaxis="y1",),
+    )
     fig.add_trace(
-        go.Scatter(x=df['Date'], y=df[' CO2 ppm'], name='CO2 ppm', yaxis="y1",),
-        secondary_y=False, row=1, col=1)
+        go.Scatter(x=df.index, y=df[' CO2 ppm'], name='CO2 ppm', yaxis="y2",),
+    )
     fig.add_trace(
-        go.Scatter(x=df['Date'], y=df[' Humidity %'], name='Humidity %', yaxis="y2",),
-        secondary_y=True, row=2, col=1)
+        go.Scatter(x=df.index, y=df[' Humidity %'], name='Humidity %', yaxis="y3",),
+    )
     fig.add_trace(
-        go.Scatter(x=df['Date'], y=df[' Celsius'], name='Celsius', yaxis="y3",),
-        secondary_y=False, row=2, col=1)
+        go.Scatter(x=df.index, y=df[' Celsius']-CELSIUS_OFFSET, name='Celsius', yaxis="y4",),
+    )
 
     fig.update_layout(
-        yaxis=dict(side="left", title="ppm"),
-        yaxis2=dict(side="right", title="hPa"),
-        yaxis3=dict(side="left", title="C"),
-        yaxis4=dict(side="right", title="%"),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom", xanchor="left",
+            x=0, y=1.06,
+        ),
+        xaxis=dict(
+            range = [datetime.now()-timedelta(days=2), datetime.now()],
+            rangeslider=dict(
+                autorange=True,
+            ),
+            type = "date",
+            side = 'top',
+            rangeselector=dict(
+                yanchor="bottom", xanchor="right",
+                x=1, y=1.06,
+                buttons=list([
+                    dict(count=1, label="1日", step="day", stepmode="backward"),
+                    dict(count=2, label="2日", step="day", stepmode="backward"),
+                    dict(count=6, label="週", step="day", stepmode="backward"),
+                    dict(count=1, label="月", step="month", stepmode="backward"),
+                    dict(step="all")
+                ])
+            )
+        ),
+        yaxis1=dict(domain=[0.76, 1.00], side="right", title="hPa"),
+        yaxis2=dict(domain=[0.51, 0.75], side="right", title="ppm"),
+        yaxis3=dict(domain=[0.26, 0.50], side="right", title="%"),
+        yaxis4=dict(domain=[0.00, 0.25], side="right", title="C"),
     )
     fig.update_layout(
         dragmode="zoom",
         hovermode="x",
-        height=600,
+        height=800,
     )
 
     return fig
@@ -55,15 +85,9 @@ def create_fig(csv_file):
 fig = create_fig(CSV_FILENAME)
 
 app.layout = html.Div(children=[
-    html.H1(
-        children='I2C Sensor on Dash',
-        style={
-            'textAlign': 'center',
-        }
-    ),
     html.Div(
         children=[
-            'Dash: A web application framework for Python.\n',
+            'I2C Sensor on Dash   \n',
             html.Button(
                 'Update', id='update-button', n_clicks=0,
                 style={
