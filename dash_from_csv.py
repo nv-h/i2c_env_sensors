@@ -30,6 +30,9 @@ def create_fig(csv_file):
     df.index = df.index.tz_localize('UTC')
     df.index = df.index.tz_convert(TIMEZONE)
 
+    df = df[(df.index > df.index[-1]-timedelta(days=7))]
+    df = df[::len(df)//2000]
+
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(x=df.index, y=df[' Pressure hPa'], name='Pressure hPa', yaxis="y1",),
@@ -63,9 +66,10 @@ def create_fig(csv_file):
                 buttons=list([
                     dict(count=1, label="1日", step="day", stepmode="backward"),
                     dict(count=2, label="2日", step="day", stepmode="backward"),
+                    dict(count=3, label="3日", step="day", stepmode="backward"),
                     dict(count=6, label="週", step="day", stepmode="backward"),
-                    dict(count=1, label="月", step="month", stepmode="backward"),
-                    dict(step="all")
+                    # dict(count=1, label="月", step="month", stepmode="backward"),
+                    # dict(step="all")
                 ])
             )
         ),
