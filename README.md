@@ -1,6 +1,7 @@
 # CCS811/BME280 on Raspberry PI 4
 
-This document is to read sensor value of CCS811 and BME280 connected by I2C.
+This document is to read sensor value of CCS811 and BME280 connected by I2C.  
+[日本語はこっち](README_ja.md)。
 
 * CCS811: ultra-low power digital gas sensor  
      outputs: The equivalent CO2 (eCO2) and The Total Volatile Organic Compound (TVOC)
@@ -73,6 +74,10 @@ pip install smbus2
 
 Use this repository's code and read the values.
 
+* Import these codes
+     - [`bme280.py`](bme280.py)
+     - [`ccs811.py`](ccs811.py)
+
 ```python
 from bme280 import BME280
 
@@ -87,3 +92,54 @@ ccs811.compensate(h, t) # if needed
 voc, co2 = ccs811.get() # May need to exec several times to get correct values
 print(f"TVOC:{voc:4d} ppb, eCO2:{co2:4d} ppm")
 ```
+
+## Example
+
+### Command Line
+
+See [`example.py`](example.py). This example outputs to stdout every 1 second.
+
+```python
+#!/usr/bin/env python
+
+from time import sleep
+from bme280 import BME280
+from ccs811 import CCS811
+
+ccs811 = CCS811()
+bme280 = BME280()
+p, t, h = bme280.get()
+ccs811.compensate(h, t)
+
+while(True):
+    try:
+        p, t, h = bme280.get()
+        voc, co2 = ccs811.get()
+        print(f"{p:7.2f} hPa, {t:6.2f} C, {h:5.2f} %, TVOC:{voc:4d} ppb, eCO2:{co2:4d} ppm")
+        sleep(1)
+    except OSError:
+        # i2c bus somtimes cannot access
+        continue
+    except KeyboardInterrupt:
+        break
+```
+
+### GUI (matplotlib)
+
+See [`example_gui.py`](example_gui.py). This example updates the graph every 0.2 seconds.
+
+* Require: `pip install matplotlib numpy`
+
+![](images/example_gui_matplotlib.jpg)
+
+
+### GUI (dash)
+
+See [`save_csv.py`](save_csv.py) and [`dash_from_csv.py`](dash_from_csv.py). This example is updates the csv file every 1 minute, and provides Web view that read from the file by [dash framework](https://dash.plotly.com/).
+
+* Require: `pip install dash pandas numpy`
+* Note:
+     - Temperature offset: Decreased 2 Celsius degree, because the board has self-heating.
+     - Time-zone: Hard-coded in Asia/Tokyo (UTC -9 hours)
+
+![](images/example_gui_dash.jpg)
