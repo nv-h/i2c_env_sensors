@@ -72,8 +72,8 @@ pip install smbus2
 このリポジトリのコードを使うと以下のようにセンサの値を取得できる。
 
 * これらのコードをインポートして使う
-     - [`bme280.py`](https://github.com/nv-h/i2c_env_sensors/bme280.py)
-     - [`ccs811.py`](https://github.com/nv-h/i2c_env_sensors/ccs811.py)
+     - [`bme280.py`](https://github.com/nv-h/i2c_env_sensors/blob/master/bme280.py)
+     - [`ccs811.py`](https://github.com/nv-h/i2c_env_sensors/blob/master/ccs811.py)
 
 ```python
 from bme280 import BME280
@@ -94,7 +94,7 @@ print(f"TVOC:{voc:4d} ppb, eCO2:{co2:4d} ppm")
 
 ### Command Line
 
-[`example.py`](https://github.com/nv-h/i2c_env_sensors/example.py)にコマンドラインの例を示す。
+[`example.py`](https://github.com/nv-h/i2c_env_sensors/blob/master/example.py)にコマンドラインの例を示す。
 このコードは、標準出力に1秒毎にセンサで取得した値を吐く。
 たまにOSErrorになるが、気にしていない。あと、CO2濃度はしばらく経たないとちゃんとした値にならない。
 データシートによると20分位は安定しないのと、48時間のエージングが必要らしい。
@@ -126,7 +126,7 @@ while(True):
 
 ### GUI (matplotlib)
 
-[`example_gui.py`](https://github.com/nv-h/i2c_env_sensors/example_gui.py)にmatplotlibでのGUI表示の例を示す。
+[`example_gui.py`](https://github.com/nv-h/i2c_env_sensors/blob/master/example_gui.py)にmatplotlibでのGUI表示の例を示す。
 このコードでは0.2秒毎にグラフを更新している。特に意味はないが高速に動かすと動いている感が得られる。
 ([PythonでGUI画面とリアルタイムグラフ表示する](https://qiita.com/nv-h/items/92feeb34338c09c6d2a2)の成果を流用)
 
@@ -137,7 +137,7 @@ while(True):
 
 ### GUI (dash)
 
-[`save_csv.py`](https://github.com/nv-h/i2c_env_sensors/save_csv.py)で1分ごとにデータ取得して、[`dash_from_csv.py`](https://github.com/nv-h/i2c_env_sensors/dash_from_csv.py)でそれをWeb UIで表示する。
+[`save_csv.py`](https://github.com/nv-h/i2c_env_sensors/blob/master/save_csv.py)で1分ごとにデータ取得して、[`dash_from_csv.py`](https://github.com/nv-h/i2c_env_sensors/blob/master/dash_from_csv.py)でそれをWeb UIで表示する。
 表示には[dash](https://dash.plotly.com/)を使用した。
 
 * 必要なパッケージ: `pip install dash pandas numpy`
