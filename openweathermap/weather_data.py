@@ -3,7 +3,10 @@
 import pandas as pd
 from datetime import datetime, timezone
 
-from .api_key import API_KEY
+try:
+    from .api_key import API_KEY
+except ImportError:
+    from api_key import API_KEY
 import urllib.request
 import json
 

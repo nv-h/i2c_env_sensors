@@ -11,7 +11,12 @@ from datetime import datetime, timedelta
 
 import os
 
-from openweathermap.weather_data import weather_data
+try:
+    from openweathermap.weather_data import weather_data
+except ImportError:
+    openweathermap_available = False
+else:
+    openweathermap_available = True
 
 
 CSV_FILENAME = './dump_data.csv'
@@ -59,6 +64,27 @@ def set_timezoned_time_to_index(df, label='Date', tz_from='UTC', tz_to=TIMEZONE)
     return df
 
 
+def add_forecast_fig(fig):
+    weather = weather_data()
+    df_forecast = weather.get_forecast_dataframe()
+    df_forecast = set_timezoned_time_to_index(df_forecast, 'dt_txt')
+
+    fig.add_trace(
+        go.Scatter(x=df_forecast.index, y=df_forecast['main.pressure'], name='forecast hPa',
+            yaxis="y1", line=dict(color=px.colors.qualitative.Plotly[1-1], dash='dash'))
+    )
+    fig.add_trace(
+        go.Scatter(x=df_forecast.index, y=df_forecast['main.humidity'], name='forecast %',
+            yaxis="y3", line=dict(color=px.colors.qualitative.Plotly[3-1], dash='dash'))
+    )
+    fig.add_trace(
+        go.Scatter(x=df_forecast.index, y=df_forecast['main.temp'], name='forecast C',
+            yaxis="y4", line=dict(color=px.colors.qualitative.Plotly[4-1], dash='dash'))
+    )
+
+    return fig
+
+
 # assume you have a "long-form" data frame
 # see https://plotly.com/python/px-arguments/ for more options
 def create_fig(csv_file):
@@ -66,18 +92,10 @@ def create_fig(csv_file):
     df = set_timezoned_time_to_index(df)
     df = thin_out_data(df, days=7, rows=2000)
 
-    weather = weather_data()
-    df_forecast = weather.get_forecast_dataframe()
-    df_forecast = set_timezoned_time_to_index(df_forecast, 'dt_txt')
-
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(x=df.index, y=df[' Pressure hPa'], name='Pressure hPa',
             yaxis="y1", line=dict(color=px.colors.qualitative.Plotly[1-1]))
-    )
-    fig.add_trace(
-        go.Scatter(x=df_forecast.index, y=df_forecast['main.pressure'], name='forecost hPa',
-            yaxis="y1", line=dict(color=px.colors.qualitative.Plotly[1-1], dash='dash'))
     )
     fig.add_trace(
         go.Scatter(x=df.index, y=df[' CO2 ppm'], name='CO2 ppm',
@@ -88,17 +106,15 @@ def create_fig(csv_file):
             yaxis="y3", line=dict(color=px.colors.qualitative.Plotly[3-1]))
     )
     fig.add_trace(
-        go.Scatter(x=df_forecast.index, y=df_forecast['main.humidity'], name='forecost %',
-            yaxis="y3", line=dict(color=px.colors.qualitative.Plotly[3-1], dash='dash'))
-    )
-    fig.add_trace(
         go.Scatter(x=df.index, y=df[' Celsius']-CELSIUS_OFFSET, name='Celsius',
             yaxis="y4", line=dict(color=px.colors.qualitative.Plotly[4-1]))
     )
-    fig.add_trace(
-        go.Scatter(x=df_forecast.index, y=df_forecast['main.temp'], name='forecost C',
-            yaxis="y4", line=dict(color=px.colors.qualitative.Plotly[4-1], dash='dash'))
-    )
+
+    if openweathermap_available:
+        fig = add_forecast_fig(fig)
+        offset = timedelta(days=1)
+    else:
+        offset = timedelta(days=0)
 
     fig.update_layout(
         legend=dict(
@@ -107,7 +123,7 @@ def create_fig(csv_file):
             x=0, y=1.06,
         ),
         xaxis=dict(
-            range = [df.index[-1]-timedelta(days=2), df.index[-1]+timedelta(days=1)],
+            range = [df.index[-1]-timedelta(days=2), df.index[-1]+offset],
             rangeslider=dict(
                 autorange=True,
             ),
