@@ -6,3 +6,4 @@ venv*
 *.png
 
 api_key.py
+forecast.json
