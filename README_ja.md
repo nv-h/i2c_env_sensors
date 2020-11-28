@@ -150,6 +150,13 @@ while(True):
 無限にCSVファイルに追記することになるが、読み込みより表示のほうが大幅に負荷が大きいため表示データを1周間ごとに制限している。
 さらにデータの個数は間引きして表示している。(1分間隔なんて高頻度に取得するなってことだけど、デモだとたくさん待たないといけないので...)
 
+もし[OpenWeather Map](https://openweathermap.org/)のAPI keyを持っている場合、以下のようにAPI keyをセットすると予報データも同時に表示される。
+
+```bash
+echo "API_key = {API key}" > ./openweathermap/api_key.py
+```
+
+
 * 知見
     - dashはコードを変更すると動的に表示が更新されて楽しい
     - Rasberry PIでdashは重すぎるかと思ったけど割とサクサク

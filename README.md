@@ -143,3 +143,9 @@ See [`save_csv.py`](save_csv.py) and [`dash_from_csv.py`](dash_from_csv.py). Thi
      - Time-zone: Hard-coded in Asia/Tokyo (UTC -9 hours)
 
 ![](images/example_gui_dash.jpg)
+
+If you have [OpenWeather Map](https://openweathermap.org/) API key, API key set as bellow and can display weather forecast data.
+
+```bash
+echo "API_key = {API key}" > ./openweathermap/api_key.py
+```
