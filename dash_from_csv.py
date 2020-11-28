@@ -4,13 +4,15 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import pandas as pd
-import numpy as np
 
+import plotly.express as px
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 from datetime import datetime, timedelta
 
 import os
+
+from openweathermap.weather_data import weather_data
+
 
 CSV_FILENAME = './dump_data.csv'
 TIMEZONE = 'Asia/Tokyo'
@@ -64,18 +66,38 @@ def create_fig(csv_file):
     df = set_timezoned_time_to_index(df)
     df = thin_out_data(df, days=7, rows=2000)
 
+    weather = weather_data()
+    df_forecast = weather.get_forecast_dataframe()
+    df_forecast = set_timezoned_time_to_index(df_forecast, 'dt_txt')
+
     fig = go.Figure()
     fig.add_trace(
-        go.Scatter(x=df.index, y=df[' Pressure hPa'], name='Pressure hPa', yaxis="y1",),
+        go.Scatter(x=df.index, y=df[' Pressure hPa'], name='Pressure hPa',
+            yaxis="y1", line=dict(color=px.colors.qualitative.Plotly[1-1]))
     )
     fig.add_trace(
-        go.Scatter(x=df.index, y=df[' CO2 ppm'], name='CO2 ppm', yaxis="y2",),
+        go.Scatter(x=df_forecast.index, y=df_forecast['main.pressure'], name='forecost hPa',
+            yaxis="y1", line=dict(color=px.colors.qualitative.Plotly[1-1], dash='dash'))
     )
     fig.add_trace(
-        go.Scatter(x=df.index, y=df[' Humidity %'], name='Humidity %', yaxis="y3",),
+        go.Scatter(x=df.index, y=df[' CO2 ppm'], name='CO2 ppm',
+            yaxis="y2", line=dict(color=px.colors.qualitative.Plotly[2-1]))
     )
     fig.add_trace(
-        go.Scatter(x=df.index, y=df[' Celsius']-CELSIUS_OFFSET, name='Celsius', yaxis="y4",),
+        go.Scatter(x=df.index, y=df[' Humidity %'], name='Humidity %',
+            yaxis="y3", line=dict(color=px.colors.qualitative.Plotly[3-1]))
+    )
+    fig.add_trace(
+        go.Scatter(x=df_forecast.index, y=df_forecast['main.humidity'], name='forecost %',
+            yaxis="y3", line=dict(color=px.colors.qualitative.Plotly[3-1], dash='dash'))
+    )
+    fig.add_trace(
+        go.Scatter(x=df.index, y=df[' Celsius']-CELSIUS_OFFSET, name='Celsius',
+            yaxis="y4", line=dict(color=px.colors.qualitative.Plotly[4-1]))
+    )
+    fig.add_trace(
+        go.Scatter(x=df_forecast.index, y=df_forecast['main.temp'], name='forecost C',
+            yaxis="y4", line=dict(color=px.colors.qualitative.Plotly[4-1], dash='dash'))
     )
 
     fig.update_layout(
@@ -85,7 +107,7 @@ def create_fig(csv_file):
             x=0, y=1.06,
         ),
         xaxis=dict(
-            range = [df.index[-1]-timedelta(days=2), df.index[-1]],
+            range = [df.index[-1]-timedelta(days=2), df.index[-1]+timedelta(days=1)],
             rangeslider=dict(
                 autorange=True,
             ),
