@@ -1,5 +1,4 @@
-#coding: utf-8
-# https://github.com/SWITCHSCIENCE/samplecodes/blob/master/BME280/Python27/bme280_sample.py
+# refer: https://github.com/SWITCHSCIENCE/samplecodes/blob/master/BME280/Python27/bme280_sample.py
 
 from smbus2 import SMBus
 import time
