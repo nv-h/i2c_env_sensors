@@ -21,17 +21,50 @@ CELSIUS_OFFSET = 2 # generated heat by the board
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
+
+def thin_out_data(df, days=7, rows=2000):
+    '''Get smaller Dataframe
+    Display is slow when data is big.
+
+    param:
+        df (pandas.DataFrame): include time data
+        days (int): wanted data width
+        rows (int): wanted data rows
+    return: (pandas.DataFrame)
+    '''
+    if days != 0:
+        df = df[(df.index > df.index[-1]-timedelta(days=days))]
+    if rows != 0:
+        df = df[::len(df)//rows]
+
+    return df
+
+
+def set_timezoned_time_to_index(df, label='Date', tz_from='UTC', tz_to=TIMEZONE):
+    '''Set timezone and move index
+    Need to set index because display cann't better.
+
+    param:
+        df (pandas.DataFrame): include time data
+        label (str): text label of time date
+        tz_from (str): timezone strings before changing
+        tz_to (str): timezone strings after changing
+    return: (pandas.DataFrame)
+    '''
+    df = df.set_index(label)
+    df.index = pd.to_datetime(df.index)
+    df.index = df.index.tz_localize(tz_from)
+    df.index = df.index.tz_convert(tz_to)
+
+    return df
+
+
 # assume you have a "long-form" data frame
 # see https://plotly.com/python/px-arguments/ for more options
 def create_fig(csv_file):
     df = pd.read_csv(csv_file)
-    df = df.set_index('Date')
-    df.index = pd.to_datetime(df.index)
-    df.index = df.index.tz_localize('UTC')
-    df.index = df.index.tz_convert(TIMEZONE)
-
-    df = df[(df.index > df.index[-1]-timedelta(days=7))]
-    df = df[::len(df)//2000]
+    df = set_timezoned_time_to_index(df)
+    df = thin_out_data(df, days=7, rows=2000)
 
     fig = go.Figure()
     fig.add_trace(
@@ -67,7 +100,7 @@ def create_fig(csv_file):
                     dict(count=1, label="1日", step="day", stepmode="backward"),
                     dict(count=2, label="2日", step="day", stepmode="backward"),
                     dict(count=3, label="3日", step="day", stepmode="backward"),
-                    dict(count=6, label="週", step="day", stepmode="backward"),
+                    dict(count=7, label="週", step="day", stepmode="backward"),
                     # dict(count=1, label="月", step="month", stepmode="backward"),
                     # dict(step="all")
                 ])
@@ -88,26 +121,23 @@ def create_fig(csv_file):
 
 fig = create_fig(CSV_FILENAME)
 
-app.layout = html.Div(children=[
-    html.Div(
-        children=[
-            'I2C Sensor on Dash   \n',
-            html.Button(
-                'Update', id='update-button', n_clicks=0,
-                style={
-                    'textAlign': 'center',
-                }
-            ),
-        ],
-        style={
-            'textAlign': 'center',
-        }
-    ),
-    dcc.Graph(
-        id='graph', figure=fig,
-        responsive='auto',
-    ),
-])
+app.layout = html.Div(
+    children=[
+        html.Div(
+            "Display I2C Sensors value on Dash.",
+        ),
+        html.Button(
+            'Update data', id='update-button', n_clicks=0,
+        ),
+        dcc.Graph(
+            id='graph', figure=fig,
+            responsive='auto',
+        ),
+    ], 
+    style={
+        'textAlign': 'center',
+    }
+)
 
 @app.callback(
     dash.dependencies.Output('graph', 'figure'),
