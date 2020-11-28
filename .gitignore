@@ -3,3 +3,6 @@ __pycache__
 venv*
 *.out
 *.csv
+*.png
+
+api_key.py
