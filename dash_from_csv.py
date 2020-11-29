@@ -18,14 +18,14 @@ except ImportError:
 else:
     openweathermap_available = True
 
+from japan_meteological_agency import jma_data
 
 CSV_FILENAME = './dump_data.csv'
 TIMEZONE = 'Asia/Tokyo'
+CITY = 'Tokyo.JP'
 CELSIUS_OFFSET = 2 # generated heat by the board
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-
 
 def thin_out_data(df, days=7, rows=2000):
     '''Get smaller Dataframe
@@ -65,7 +65,7 @@ def set_timezoned_time_to_index(df, label='Date', tz_from='UTC', tz_to=TIMEZONE)
 
 
 def add_forecast_fig(fig, latest):
-    weather = weather_data()
+    weather = weather_data(city=CITY)
     df_forecast = weather.get_forecast_dataframe(latest)
     df_forecast = set_timezoned_time_to_index(df_forecast, 'dt_txt')
 
@@ -79,6 +79,24 @@ def add_forecast_fig(fig, latest):
     )
     fig.add_trace(
         go.Scatter(x=df_forecast.index, y=df_forecast['main.temp'], name='forecast C',
+            yaxis="y4", line=dict(color=px.colors.qualitative.Plotly[4-1], dash='dash'))
+    )
+
+    return fig
+
+
+def add_historical_fig(fig):
+    df = jma_data.get_historical_dataframe()
+    fig.add_trace(
+        go.Scatter(x=df.index, y=df['気圧', 'hPa'], name='historical hPa',
+            yaxis="y1", line=dict(color=px.colors.qualitative.Plotly[1-1], dash='dash'))
+    )
+    fig.add_trace(
+        go.Scatter(x=df.index, y=df['湿度', '%'], name='historical %',
+            yaxis="y3", line=dict(color=px.colors.qualitative.Plotly[3-1], dash='dash'))
+    )
+    fig.add_trace(
+        go.Scatter(x=df.index, y=df['気温', '℃'], name='historical C',
             yaxis="y4", line=dict(color=px.colors.qualitative.Plotly[4-1], dash='dash'))
     )
 
@@ -115,6 +133,9 @@ def create_fig(csv_file):
         offset = timedelta(days=1)
     else:
         offset = timedelta(days=0)
+
+    if TIMEZONE == 'Asia/Tokyo':
+        fig = add_historical_fig(fig)
 
     fig.update_layout(
         legend=dict(
@@ -157,6 +178,7 @@ def create_fig(csv_file):
 
 fig = create_fig(CSV_FILENAME)
 
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app.layout = html.Div(
     children=[
         html.Div(

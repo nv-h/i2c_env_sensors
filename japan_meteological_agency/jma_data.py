@@ -17,7 +17,7 @@ TODAY_URL = f"https://www.jma.go.jp/jp/amedas_h/today-{PLACE_CODE}.html?areaCode
 YESTERDAY_URL = f"https://www.jma.go.jp/jp/amedas_h/yesterday-{PLACE_CODE}.html?areaCode={AREA_CODE}&groupCode={GROUPE_CODE}"
 
 
-def get_dataframe(url=TODAY_URL):
+def get_1day_history(url=TODAY_URL):
     '''
                          時刻    気温  降水量   風向   風速 日照時間  積雪深    湿度      気圧
                           時     ℃   mm 16方位  m/s    h   cm     %     hPa
@@ -46,6 +46,14 @@ def get_dataframe(url=TODAY_URL):
     return df
 
 
+def get_historical_dataframe():
+    today_df = get_1day_history(TODAY_URL)
+    yesterday_df = get_1day_history(YESTERDAY_URL)
+    df = pd.concat([yesterday_df, today_df])
+
+    return df
+
+
 if __name__ == '__main__':
     import dash
     import dash_core_components as dcc
@@ -54,9 +62,7 @@ if __name__ == '__main__':
 
     import os
 
-    today_df = get_dataframe(TODAY_URL)
-    yesterday_df = get_dataframe(YESTERDAY_URL)
-    df = pd.concat([yesterday_df, today_df])
+    df = get_historical_dataframe()
 
     fig = go.Figure()
     fig.add_trace(
