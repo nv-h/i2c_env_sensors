@@ -71,16 +71,16 @@ def add_forecast_fig(fig, latest):
 
     fig.add_trace(
         go.Scatter(x=df_forecast.index, y=df_forecast['main.pressure'], name='forecast hPa',
-            yaxis="y1", line=dict(color=px.colors.qualitative.Plotly[1-1], dash='dash'))
-    )
+            yaxis="y1", line=dict(color=px.colors.qualitative.Plotly[1-1], dash='dash'),
+            showlegend=False))
     fig.add_trace(
         go.Scatter(x=df_forecast.index, y=df_forecast['main.humidity'], name='forecast %',
-            yaxis="y3", line=dict(color=px.colors.qualitative.Plotly[3-1], dash='dash'))
-    )
+            yaxis="y3", line=dict(color=px.colors.qualitative.Plotly[3-1], dash='dash'),
+            showlegend=False))
     fig.add_trace(
         go.Scatter(x=df_forecast.index, y=df_forecast['main.temp'], name='forecast C',
-            yaxis="y4", line=dict(color=px.colors.qualitative.Plotly[4-1], dash='dash'))
-    )
+            yaxis="y4", line=dict(color=px.colors.qualitative.Plotly[4-1], dash='dash'),
+            showlegend=False))
 
     return fig
 
@@ -89,16 +89,16 @@ def add_historical_fig(fig):
     df = jma_data.get_historical_dataframe()
     fig.add_trace(
         go.Scatter(x=df.index, y=df['気圧', 'hPa'], name='historical hPa',
-            yaxis="y1", line=dict(color=px.colors.qualitative.Plotly[1-1], dash='dash'))
-    )
+            yaxis="y1", line=dict(color=px.colors.qualitative.Plotly[1-1], dash='dash'),
+            showlegend=False))
     fig.add_trace(
         go.Scatter(x=df.index, y=df['湿度', '%'], name='historical %',
-            yaxis="y3", line=dict(color=px.colors.qualitative.Plotly[3-1], dash='dash'))
-    )
+            yaxis="y3", line=dict(color=px.colors.qualitative.Plotly[3-1], dash='dash'),
+            showlegend=False))
     fig.add_trace(
         go.Scatter(x=df.index, y=df['気温', '℃'], name='historical C',
-            yaxis="y4", line=dict(color=px.colors.qualitative.Plotly[4-1], dash='dash'))
-    )
+            yaxis="y4", line=dict(color=px.colors.qualitative.Plotly[4-1], dash='dash'),
+            showlegend=False))
 
     return fig
 
