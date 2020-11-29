@@ -130,7 +130,7 @@ while(True):
 このコードでは0.2秒毎にグラフを更新している。特に意味はないが高速に動かすと動いている感が得られる。
 ([PythonでGUI画面とリアルタイムグラフ表示する](https://qiita.com/nv-h/items/92feeb34338c09c6d2a2)の成果を流用)
 
-* 必要なパッケージ: `pip install matplotlib numpy`
+* 必要なパッケージ: `pip install matplotlib numpy lxml`
 
 ![](images/example_gui_matplotlib.jpg)
 
