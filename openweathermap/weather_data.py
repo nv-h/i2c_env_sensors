@@ -115,4 +115,11 @@ if __name__ == '__main__':
             ),
         ], 
     )
-    app.run_server(debug=True, host=os.uname()[1], port='5001')
+
+    if os.name == 'nt':
+        import socket
+        hostname = socket.gethostname()
+    else:
+        hostname = os.uname()[1]
+
+    app.run_server(debug=True, host=hostname, port='5001')
