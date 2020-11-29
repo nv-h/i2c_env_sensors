@@ -45,10 +45,10 @@ class weather_data():
     def json_to_dataframe(self, json_obj):
         return pd.json_normalize(json_obj['list'])
 
-    def get_forecast_dataframe(self):
+    def get_forecast_dataframe(self, latest=datetime.now(timezone.utc)):
         saved_df = self.json_to_dataframe(self.read_forecast_json())
         saved_head =  pd.to_datetime(saved_df['dt_txt'], utc=True)[0]
-        if saved_head < datetime.now(timezone.utc):
+        if saved_head < latest:
             return self.json_to_dataframe(self.get_forecast_json_obj())
         else:
             return saved_df

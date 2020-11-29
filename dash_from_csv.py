@@ -64,9 +64,9 @@ def set_timezoned_time_to_index(df, label='Date', tz_from='UTC', tz_to=TIMEZONE)
     return df
 
 
-def add_forecast_fig(fig):
+def add_forecast_fig(fig, latest):
     weather = weather_data()
-    df_forecast = weather.get_forecast_dataframe()
+    df_forecast = weather.get_forecast_dataframe(latest)
     df_forecast = set_timezoned_time_to_index(df_forecast, 'dt_txt')
 
     fig.add_trace(
@@ -111,7 +111,7 @@ def create_fig(csv_file):
     )
 
     if openweathermap_available:
-        fig = add_forecast_fig(fig)
+        fig = add_forecast_fig(fig, pd.to_datetime(df.index[-1], utc=True))
         offset = timedelta(days=1)
     else:
         offset = timedelta(days=0)
