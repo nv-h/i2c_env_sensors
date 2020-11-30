@@ -39,7 +39,7 @@ def get_1day_history(url=TODAY_URL):
     dfs = pd.read_html(url, header=[0, 1]) # header is 2 rows
     df = dfs[4] # main table
 
-    day_start = datetime.now(timezone.utc) + timedelta(hours=9)
+    day_start = datetime.now(timezone.utc) + timedelta(hours=9-1) # mesurment time is before 1 hour
     day_start = day_start.replace(hour=1, minute=0, second=0, microsecond=0)
     if "yesterday" in url:
         day_start -= timedelta(days=1)
@@ -77,7 +77,12 @@ def is_old_csv(path=CSV_PATH):
     del df['日照時間', 'h'] # '日照時間' include NaN
 
     # saved time is JST(+9)
-    saved_time_str = df[df.isnull().any(axis=1)].index[0]
+    NaN_index = df.isnull().any(axis=1) # future hours index
+    if not NaN_index.any():
+        # Select last row when the table is full 
+        saved_time_str = df.index[-1]
+    else:
+        saved_time_str = df[NaN_index].index[0]
     saved_time = pd.to_datetime(saved_time_str).tz_convert('UTC')
     # datetime.now() return system timezone, so force to JST(+9)
     now = datetime.now(timezone.utc)
