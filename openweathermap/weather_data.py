@@ -27,12 +27,12 @@ class weather_data():
         request = urllib.request.Request(self.url, method='GET')
         with urllib.request.urlopen(request) as response:
             return json.loads(response.read().decode("utf-8"))
-    
+
     def save_forecast_json(self, path=FORECAST_SAVE_PATH):
         json_obj = self.get_forecast_json_obj()
         with open(path, mode='w') as f:
             f.write(json.dumps(json_obj, indent=4))
-        
+
         return json_obj
 
     def read_forecast_json(self, path=FORECAST_SAVE_PATH):
@@ -113,7 +113,7 @@ if __name__ == '__main__':
                 id='graph', figure=fig,
                 responsive='auto',
             ),
-        ], 
+        ],
     )
 
     if os.name == 'nt':

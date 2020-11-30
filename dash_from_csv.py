@@ -191,7 +191,7 @@ app.layout = html.Div(
             id='graph', figure=fig,
             responsive='auto',
         ),
-    ], 
+    ],
     style={
         'textAlign': 'center',
     }
