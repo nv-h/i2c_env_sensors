@@ -177,7 +177,7 @@ def create_fig(csv_file):
             x=0, y=1.06,
         ),
         xaxis=dict(
-            range = [df.index[-1]-timedelta(days=2), df.index[-1]+offset],
+            range = [df.index[-1]-timedelta(days=1), df.index[-1]+offset],
             rangeslider=dict(
                 autorange=True,
             ),
