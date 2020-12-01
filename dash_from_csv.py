@@ -8,6 +8,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
+from PIL import Image
 
 import os
 
@@ -26,6 +27,7 @@ CITY = 'Tokyo.JP'
 CELSIUS_OFFSET = 2 # generated heat by the board
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+hour_width_in_msec = 1000*3600
 
 def thin_out_data(df, days=7, rows=2000):
     '''Get smaller Dataframe
@@ -64,6 +66,32 @@ def set_timezoned_time_to_index(df, label='Date', tz_from='UTC', tz_to=TIMEZONE)
     return df
 
 
+def add_image_to_xaxis_datetime(fig, image, text,
+    x, y, width=hour_width_in_msec*3, opacity=1.0, layer="above"):
+    # print(f"x={x}, y={y}, width={width}")
+    fig.add_layout_image(
+        dict(
+            source=image,
+            xref="x", # yref="y",
+            x=x, # Image position x is datetime
+            y=y,
+
+            # Sizes are selected smaller one if hold aspect ratio
+            sizex=width, # sizex is must be integer or float format
+                         # the format is msec based
+            sizey=1000,
+
+            opacity=opacity,
+            # sizing="stretch", # Comment out if want to hold aspect ratio
+            layer=layer # above or below
+        )
+    )
+    fig.add_annotation(text=text,
+        xref="x", yref="paper",
+        x=x+timedelta(hours=1.5), y=y-0.16, showarrow=False)
+    return fig
+
+
 def add_forecast_fig(fig, latest):
     weather = weather_data(city=CITY)
     df_forecast = weather.get_forecast_dataframe(latest)
@@ -82,6 +110,11 @@ def add_forecast_fig(fig, latest):
             yaxis="y4", line=dict(color=px.colors.qualitative.Plotly[4-1], dash='dash'),
             showlegend=False))
 
+    # Add forecast weather icons
+    for i, weather in enumerate(df_forecast['weather']):
+        fig = add_image_to_xaxis_datetime(
+            fig, Image.open(f"./icons/{weather[0]['icon']}@2x.png"), weather[0]['main'],
+            df_forecast.index[i], 0.75)
     return fig
 
 
@@ -157,9 +190,9 @@ def create_fig(csv_file):
                     dict(count=1, label="1日", step="day", stepmode="backward"),
                     dict(count=2, label="2日", step="day", stepmode="backward"),
                     dict(count=3, label="3日", step="day", stepmode="backward"),
-                    dict(count=7, label="週", step="day", stepmode="backward"),
+                    # dict(count=7, label="週", step="day", stepmode="backward"),
                     # dict(count=1, label="月", step="month", stepmode="backward"),
-                    # dict(step="all")
+                    dict(step="all")
                 ])
             )
         ),
@@ -173,7 +206,8 @@ def create_fig(csv_file):
         hovermode="x",
         height=800,
     )
-
+    # "plotly", "plotly_white", "plotly_dark", "ggplot2", "seaborn", "simple_white", "none"
+    fig.update_layout(template="plotly_white")
     return fig
 
 fig = create_fig(CSV_FILENAME)
