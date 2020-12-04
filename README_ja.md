@@ -5,6 +5,11 @@ CCS811とBME280をI2Cで接続して、値を読む。
 * CCS811: 等価CO2濃度と総揮発性ガス濃度を測定できる
 * BME280: 温度、湿度、気圧を測定できる
 
+OpenWeatherMapに登録してAPIキーを持っていれば予報を表示できる。
+あと、日本の場合は気象庁のアメダスから過去の履歴を取得して表示できる。
+
+![](images/example_gui_dash_with_forecast_and_historical.png)
+
 ## Check I2C connection
 
 `i2c-tools`が必要。これで接続を確認する。

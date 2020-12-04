@@ -8,6 +8,11 @@ This document is to read sensor value of CCS811 and BME280 connected by I2C.
 * BME280: Combined humidity and pressure sensor  
      outputs: humidity and pressure and temprature
 
+if you have API-key of OpenWeatherMap, this application can plot the forecast data.
+And if you live in japan, this application can plot historical data from the Japan Meteorological Associate.
+
+![](images/example_gui_dash_with_forecast_and_historical.png)
+
 ## Check I2C connection
 
 Install `i2c-tools`, and check the connection.  
