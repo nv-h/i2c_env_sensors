@@ -159,7 +159,7 @@ def add_historical_fig(fig):
 def create_fig(csv_file):
     df = pd.read_csv(csv_file)
     df = set_timezoned_time_to_index(df)
-    df = thin_out_data(df, days=2, rows=200)
+    df = thin_out_data(df, days=2, rows=0)
 
     fig = go.Figure()
     fig.add_trace(
