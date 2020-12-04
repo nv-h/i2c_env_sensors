@@ -27,10 +27,10 @@ with open(CSV_FILENAME, 'a') as f:
             if co2 == 0:
                 continue
             now = datetime.now()
-            print(f"{now.isoformat()}, {p:7.2f} hPa, {t:6.2f} C, {h:5.2f} %, eCO2:{co2:4d} ppm")
+            # print(f"{now.isoformat()}, {p:7.2f} hPa, {t:6.2f} C, {h:5.2f} %, eCO2:{co2:4d} ppm")
             f.write(f"{now}, {co2}, {t}, {h}, {p}\n")
             f.flush()
-            sleep(60)
+            sleep(60*10)
         except OSError:
             # i2c bus somtimes cannot access
             continue
