@@ -68,6 +68,11 @@ def set_timezoned_time_to_index(df, label='Date', tz_from='UTC', tz_to=TIMEZONE)
 
 def add_image_to_xaxis_datetime(fig, image, text,
     x, y, width=hour_width_in_msec*3, opacity=1.0, layer="above"):
+    '''Add forecast icons
+
+    The icons are place along the x axis.
+    The x axis of datetime is msec-based.
+    '''
     # print(f"x={x}, y={y}, width={width}")
     fig.add_layout_image(
         dict(
@@ -93,6 +98,11 @@ def add_image_to_xaxis_datetime(fig, image, text,
 
 
 def add_forecast_fig(fig, latest):
+    '''Add the forecast weather data to received fig
+
+    The forecast data from openweathermap has 5 days.
+    But heavy to display all data. So display only 2 days. 
+    '''
     weather = weather_data(city=CITY)
     df = weather.get_forecast_dataframe(latest)
     df = set_timezoned_time_to_index(df, 'dt_txt')
@@ -122,6 +132,11 @@ def add_forecast_fig(fig, latest):
 
 
 def add_historical_fig(fig):
+    '''Add historical weather data to received fig
+
+    The data get from japan meteorological associate (JMA).
+    JMA has only data in japan.
+    '''
     df = jma_data.get_historical_dataframe()
     fig.add_trace(
         go.Scatter(x=df.index, y=df['気圧', 'hPa'], name='historical hPa',
@@ -239,6 +254,7 @@ app.layout = html.Div(
     [dash.dependencies.Input('update-button', 'n_clicks')],
 )
 def update_csv(n_clicks):
+    global fig
     fig = create_fig(CSV_FILENAME)
     return fig
 
