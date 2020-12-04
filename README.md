@@ -135,7 +135,7 @@ See [`example_gui.py`](example_gui.py). This example updates the graph every 0.2
 
 ### GUI (dash)
 
-See [`save_csv.py`](save_csv.py) and [`dash_from_csv.py`](dash_from_csv.py). This example is updates the csv file every 1 minute, and provides Web view that read from the file by [dash framework](https://dash.plotly.com/).
+See [`save_csv.py`](save_csv.py) and [`dash_from_csv.py`](dash_from_csv.py). This example is updates the csv file every 10 minutes, and provides Web view that read from the file by [dash framework](https://dash.plotly.com/).
 
 * Require: `pip install dash pandas numpy lxml`
 * Note:
