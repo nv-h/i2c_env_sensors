@@ -94,27 +94,30 @@ def add_image_to_xaxis_datetime(fig, image, text,
 
 def add_forecast_fig(fig, latest):
     weather = weather_data(city=CITY)
-    df_forecast = weather.get_forecast_dataframe(latest)
-    df_forecast = set_timezoned_time_to_index(df_forecast, 'dt_txt')
+    df = weather.get_forecast_dataframe(latest)
+    df = set_timezoned_time_to_index(df, 'dt_txt')
+
+    # truncate data to 2 days
+    df = df[(df.index < df.index[0]+timedelta(days=2))]
 
     fig.add_trace(
-        go.Scatter(x=df_forecast.index, y=df_forecast['main.pressure'], name='forecast hPa',
+        go.Scatter(x=df.index, y=df['main.pressure'], name='forecast hPa',
             yaxis="y1", line=dict(color=px.colors.qualitative.Plotly[1-1], dash='dash'),
-            showlegend=False))
+            mode='lines',showlegend=False))
     fig.add_trace(
-        go.Scatter(x=df_forecast.index, y=df_forecast['main.humidity'], name='forecast %',
+        go.Scatter(x=df.index, y=df['main.humidity'], name='forecast %',
             yaxis="y3", line=dict(color=px.colors.qualitative.Plotly[3-1], dash='dash'),
-            showlegend=False))
+            mode='lines',showlegend=False))
     fig.add_trace(
-        go.Scatter(x=df_forecast.index, y=df_forecast['main.temp'], name='forecast C',
+        go.Scatter(x=df.index, y=df['main.temp'], name='forecast C',
             yaxis="y4", line=dict(color=px.colors.qualitative.Plotly[4-1], dash='dash'),
-            showlegend=False))
+            mode='lines',showlegend=False))
 
     # Add forecast weather icons
-    for i, weather in enumerate(df_forecast['weather']):
+    for i, weather in enumerate(df['weather']):
         fig = add_image_to_xaxis_datetime(
             fig, Image.open(f"./icons/{weather[0]['icon']}@2x.png"), weather[0]['main'],
-            df_forecast.index[i], 0.75)
+            df.index[i], 0.75)
     return fig
 
 
@@ -123,15 +126,15 @@ def add_historical_fig(fig):
     fig.add_trace(
         go.Scatter(x=df.index, y=df['気圧', 'hPa'], name='historical hPa',
             yaxis="y1", line=dict(color=px.colors.qualitative.Plotly[1-1], dash='dash'),
-            showlegend=False))
+            mode='lines',showlegend=False))
     fig.add_trace(
         go.Scatter(x=df.index, y=df['湿度', '%'], name='historical %',
             yaxis="y3", line=dict(color=px.colors.qualitative.Plotly[3-1], dash='dash'),
-            showlegend=False))
+            mode='lines',showlegend=False))
     fig.add_trace(
         go.Scatter(x=df.index, y=df['気温', '℃'], name='historical C',
             yaxis="y4", line=dict(color=px.colors.qualitative.Plotly[4-1], dash='dash'),
-            showlegend=False))
+            mode='lines',showlegend=False))
 
     return fig
 
@@ -141,7 +144,7 @@ def add_historical_fig(fig):
 def create_fig(csv_file):
     df = pd.read_csv(csv_file)
     df = set_timezoned_time_to_index(df)
-    df = thin_out_data(df, days=7, rows=2000)
+    df = thin_out_data(df, days=2, rows=200)
 
     fig = go.Figure()
     fig.add_trace(
