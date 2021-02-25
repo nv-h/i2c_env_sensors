@@ -186,7 +186,11 @@ def create_fig(csv_file):
         offset = timedelta(days=0)
 
     if TIMEZONE == 'Asia/Tokyo':
-        fig = add_historical_fig(fig)
+        # FIXME: new JMA data not supported
+        try:
+            fig = add_historical_fig(fig)
+        except:
+            pass
 
     fig.update_layout(
         legend=dict(
