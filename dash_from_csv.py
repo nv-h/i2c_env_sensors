@@ -139,15 +139,15 @@ def add_historical_fig(fig):
     '''
     df = jma_data.get_historical_dataframe()
     fig.add_trace(
-        go.Scatter(x=df.index, y=df['気圧', 'hPa'], name='historical hPa',
+        go.Scatter(x=df.index, y=df['normalPressure'], name='historical hPa',
             yaxis="y1", line=dict(color=px.colors.qualitative.Plotly[1-1], dash='dash'),
             mode='lines',showlegend=False))
     fig.add_trace(
-        go.Scatter(x=df.index, y=df['湿度', '%'], name='historical %',
+        go.Scatter(x=df.index, y=df['humidity'], name='historical %',
             yaxis="y3", line=dict(color=px.colors.qualitative.Plotly[3-1], dash='dash'),
             mode='lines',showlegend=False))
     fig.add_trace(
-        go.Scatter(x=df.index, y=df['気温', '℃'], name='historical C',
+        go.Scatter(x=df.index, y=df['temp'], name='historical C',
             yaxis="y4", line=dict(color=px.colors.qualitative.Plotly[4-1], dash='dash'),
             mode='lines',showlegend=False))
 
@@ -186,11 +186,7 @@ def create_fig(csv_file):
         offset = timedelta(days=0)
 
     if TIMEZONE == 'Asia/Tokyo':
-        # FIXME: new JMA data not supported
-        try:
-            fig = add_historical_fig(fig)
-        except:
-            pass
+        fig = add_historical_fig(fig)
 
     fig.update_layout(
         legend=dict(

@@ -7,3 +7,5 @@ venv*
 
 api_key.py
 forecast.json
+
+japan_meteological_agency/*.json
