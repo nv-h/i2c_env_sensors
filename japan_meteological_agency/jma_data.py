@@ -84,19 +84,20 @@ def get_historical_dataframe():
     return: pandas dataframe
     ''' 
     # 昨日の分と今日の分を取得してくっつける
-    dt_today = date.today()
-    yesterday_str = (dt_today + timedelta(days=-1)).strftime("%Y%m%d")
+    # JMAが日本なので強制的に日本時間に修正
+    now_jst = datetime.now(timezone.utc) + timedelta(hours=+9)
+    yesterday_str = (now_jst + timedelta(days=-1)).strftime("%Y%m%d")
     yesterday_urls = [f"{yesterday_str}_{i:02d}.json" for i in range(0, 24, 3)]
     df_yesterday = get_1day_history(yesterday_urls)
 
-    today_str = dt_today.strftime("%Y%m%d")
-    today_urls = [f"{today_str}_{i:02d}.json" for i in range(0, int(datetime.now().strftime('%H')), 3)]
+    today_str = now_jst.strftime("%Y%m%d")
+    today_urls = [f"{today_str}_{i:02d}.json" for i in range(0, int(now_jst.strftime('%H')), 3)]
     df_today = get_1day_history(today_urls)
 
     df = pd.concat([df_yesterday, df_today])
 
     # 2日以上前のものは消去
-    old_day_str = (dt_today + timedelta(days=-2)).strftime("%Y%m%d")
+    old_day_str = (now_jst + timedelta(days=-2)).strftime("%Y%m%d")
     for filename in  glob.glob(f'{os.path.dirname(__file__)}{os.sep}{old_day_str}*'):
         os.remove(filename)
 
