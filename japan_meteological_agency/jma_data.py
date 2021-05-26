@@ -82,7 +82,7 @@ def get_historical_dataframe():
     '''Get data and save data to csv if csv is old.
 
     return: pandas dataframe
-    ''' 
+    '''
     # 昨日の分と今日の分を取得してくっつける
     # JMAが日本なので強制的に日本時間に修正
     now_jst = datetime.now(timezone.utc) + timedelta(hours=+9)
@@ -97,8 +97,12 @@ def get_historical_dataframe():
     df = pd.concat([df_yesterday, df_today])
 
     # 2日以上前のものは消去
-    old_day_str = (now_jst + timedelta(days=-2)).strftime("%Y%m%d")
-    for filename in  glob.glob(f'{os.path.dirname(__file__)}{os.sep}{old_day_str}*'):
+    # globがexcludeに対応していない(?)ので集合の演算で対応
+    json_dir = f'{os.path.dirname(__file__)}{os.sep}'
+    old_jsons = set(glob.glob(f'{json_dir}*.json')) \
+        - set(glob.glob(f'{json_dir}{yesterday_str}*.json')) \
+        - set(glob.glob(f'{json_dir}{today_str}*.json'))
+    for filename in old_jsons:
         os.remove(filename)
 
     """有効な列は以下の通りだが、値はリスト形式になっている。
