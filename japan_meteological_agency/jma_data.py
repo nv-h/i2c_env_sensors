@@ -51,7 +51,8 @@ def get_json_data(json_url):
 def get_1day_history(json_urls):
     '''Get 1 day history from `www.jma.go.jp`.
 
-    return pandas dataframe like bellow
+    Return pandas dataframe like bellow
+    If jma has no data, return None.
     ----
                            prefNumber  observationNumber     pressure normalPressure  ...    minTemp                    gustTime gustDirection       gust
 2021-05-23 00:00:00+09:00          44                132  [1001.5, 0]    [1004.3, 0]  ...  [17.5, 0]  {'hour': 18, 'minute': 12}        [8, 0]  [14.5, 0]
@@ -67,6 +68,9 @@ def get_1day_history(json_urls):
         if df_temp is None:
             break
         dfs.append(df_temp)
+
+    if dfs[0] is None:
+        return None
 
     df = pd.concat(dfs)
 
@@ -94,7 +98,10 @@ def get_historical_dataframe():
     today_urls = [f"{today_str}_{i:02d}.json" for i in range(0, int(now_jst.strftime('%H')), 3)]
     df_today = get_1day_history(today_urls)
 
-    df = pd.concat([df_yesterday, df_today])
+    if df_today is not None:
+        df = pd.concat([df_yesterday, df_today])
+    else:
+        df = [df_yesterday]
 
     # 2日以上前のものは消去
     # globがexcludeに対応していない(?)ので集合の演算で対応
