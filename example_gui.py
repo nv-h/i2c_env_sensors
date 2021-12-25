@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from bme280 import BME280
 from ccs811 import CCS811
