@@ -69,7 +69,7 @@ def get_1day_history(json_urls):
             break
         dfs.append(df_temp)
 
-    if dfs[0] is None:
+    if dfs == []:
         return None
 
     df = pd.concat(dfs)
@@ -99,9 +99,9 @@ def get_historical_dataframe():
     df_today = get_1day_history(today_urls)
 
     if df_today is not None:
-        df = pd.concat([df_yesterday, df_today])
+        dfs = pd.concat([df_yesterday, df_today])
     else:
-        df = [df_yesterday]
+        dfs = [df_yesterday]
 
     # 2日以上前のものは消去
     # globがexcludeに対応していない(?)ので集合の演算で対応
@@ -121,12 +121,14 @@ def get_historical_dataframe():
     """
     wanted_columns = ['normalPressure', 'temp', 'humidity']
 
-    # リストになっているので、先頭の値だけ抜き出す。
-    # 2つ目の値は測定値の確からしさなので、ひとまず無視する。
-    for column in wanted_columns:
-        df[column] = unlist_df_data(df, column)
-
-    return df.loc[:, wanted_columns]
+    if len(dfs) != 1:
+        # リストになっているので、先頭の値だけ抜き出す。
+        # 2つ目の値は測定値の確からしさなので、ひとまず無視する。
+        for column in wanted_columns:
+            dfs[column] = unlist_df_data(dfs, column)
+        return dfs.loc[:, wanted_columns]
+    else:
+        return dfs[0].loc[:, wanted_columns]
 
 
 if __name__ == '__main__':
