@@ -15,22 +15,22 @@ import os
 
 CITY = "Tokyo,JP"
 FORECAST_URL = f"http://api.openweathermap.org/data/2.5/forecast?q={CITY}&units=metric&appid={API_KEY}"
-FORECAST_SAVE_PATH = 'forecast.json'
+FORECAST_SAVE_PATH = "forecast.json"
 
 
-class weather_data():
+class weather_data:
     def __init__(self, city=CITY, url=FORECAST_URL):
         self.city = city
         self.url = url
 
     def get_forecast_json_obj(self):
-        request = urllib.request.Request(self.url, method='GET')
+        request = urllib.request.Request(self.url, method="GET")
         with urllib.request.urlopen(request) as response:
             return json.loads(response.read().decode("utf-8"))
 
     def save_forecast_json(self, path=FORECAST_SAVE_PATH):
         json_obj = self.get_forecast_json_obj()
-        with open(path, mode='w') as f:
+        with open(path, mode="w") as f:
             f.write(json.dumps(json_obj, indent=4))
 
         return json_obj
@@ -43,56 +43,73 @@ class weather_data():
             return self.save_forecast_json()
 
     def json_to_dataframe(self, json_obj):
-        return pd.json_normalize(json_obj['list'])
+        return pd.json_normalize(json_obj["list"])
 
     def get_forecast_dataframe(self, latest=datetime.now(timezone.utc)):
         saved_df = self.json_to_dataframe(self.read_forecast_json())
-        saved_head =  pd.to_datetime(saved_df['dt_txt'], utc=True)[0]
+        saved_head = pd.to_datetime(saved_df["dt_txt"], utc=True)[0]
         if saved_head < latest:
             return self.json_to_dataframe(self.get_forecast_json_obj())
         else:
             return saved_df
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import dash
-    import dash_core_components as dcc
-    import dash_html_components as html
+    from dash import dcc
+    from dash import html
 
     import plotly.graph_objects as go
-    from datetime import datetime, timedelta
+    from datetime import datetime
 
     weather = weather_data()
     df = weather.get_forecast_dataframe()
 
-    df = df.set_index('dt_txt')
+    df = df.set_index("dt_txt")
     df.index = pd.to_datetime(df.index)
-    df.index = df.index.tz_localize('UTC')
-    df.index = df.index.tz_convert('Asia/Tokyo')
+    df.index = df.index.tz_localize("UTC")
+    df.index = df.index.tz_convert("Asia/Tokyo")
 
     fig = go.Figure()
     fig.add_trace(
-        go.Scatter(x=df.index, y=df['main.pressure'], name='Pressure hPa', yaxis="y1",),
+        go.Scatter(
+            x=df.index,
+            y=df["main.pressure"],
+            name="Pressure hPa",
+            yaxis="y1",
+        ),
     )
     fig.add_trace(
-        go.Scatter(x=df.index, y=df['main.humidity'], name='Humidity %', yaxis="y2",),
+        go.Scatter(
+            x=df.index,
+            y=df["main.humidity"],
+            name="Humidity %",
+            yaxis="y2",
+        ),
     )
     fig.add_trace(
-        go.Scatter(x=df.index, y=df['main.temp'], name='Celsius', yaxis="y3",),
+        go.Scatter(
+            x=df.index,
+            y=df["main.temp"],
+            name="Celsius",
+            yaxis="y3",
+        ),
     )
 
     fig.update_layout(
         legend=dict(
             orientation="h",
-            yanchor="bottom", xanchor="left",
-            x=0, y=1.06,
+            yanchor="bottom",
+            xanchor="left",
+            x=0,
+            y=1.06,
         ),
         xaxis=dict(
             rangeslider=dict(
                 autorange=True,
             ),
-            type = "date",
-            side = 'top',
+            type="date",
+            side="top",
         ),
         yaxis1=dict(domain=[0.67, 1.00], side="right", title="hPa"),
         yaxis2=dict(domain=[0.34, 0.66], side="right", title="%"),
@@ -104,22 +121,24 @@ if __name__ == '__main__':
         height=800,
     )
 
-    external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+    external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
     app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
     app.layout = html.Div(
         children=[
             dcc.Graph(
-                id='graph', figure=fig,
-                responsive='auto',
+                id="graph",
+                figure=fig,
+                responsive="auto",
             ),
         ],
     )
 
-    if os.name == 'nt':
+    if os.name == "nt":
         import socket
+
         hostname = socket.gethostname()
     else:
         hostname = os.uname()[1]
 
-    app.run_server(debug=True, host=hostname, port='5001')
+    app.run_server(debug=True, host=hostname, port="5001")
