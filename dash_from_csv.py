@@ -7,7 +7,7 @@ import pandas as pd
 
 import plotly.express as px
 import plotly.graph_objects as go
-from datetime import timedelta
+from datetime import datetime, timezone, timedelta
 from PIL import Image
 
 import os
@@ -68,9 +68,7 @@ def set_timezoned_time_to_index(df, label="Date", tz_from="UTC", tz_to=TIMEZONE)
     return df
 
 
-def add_image_to_xaxis_datetime(
-    fig, image, text, x, y, width=hour_width_in_msec * 3, opacity=1.0, layer="above"
-):
+def add_image_to_xaxis_datetime(fig, image, text, x, y, width=hour_width_in_msec * 3, opacity=1.0, layer="above"):
     """Add forecast icons
 
     The icons are place along the x axis.
@@ -103,7 +101,7 @@ def add_image_to_xaxis_datetime(
     return fig
 
 
-def add_forecast_fig(fig, latest):
+def add_forecast_fig(fig, latest=datetime.now(timezone.utc)):
     """Add the forecast weather data to received fig
 
     The forecast data from openweathermap has 5 days.
@@ -206,14 +204,11 @@ def add_historical_fig(fig):
     return fig
 
 
-# assume you have a "long-form" data frame
-# see https://plotly.com/python/px-arguments/ for more options
-def create_fig(csv_file):
+def add_sensor_csv_fig(fig, csv_file):
     df = pd.read_csv(csv_file)
     df = set_timezoned_time_to_index(df)
     df = thin_out_data(df, days=DISPLAY_DAYS, rows=0)
 
-    fig = go.Figure()
     fig.add_trace(
         go.Scatter(
             x=df.index,
@@ -251,8 +246,24 @@ def create_fig(csv_file):
         )
     )
 
+    return df
+
+
+# assume you have a "long-form" data frame
+# see https://plotly.com/python/px-arguments/ for more options
+def create_fig(csv_file):
+    fig = go.Figure()
+    df = None
+
+    if os.path.exists(csv_file):
+        df = add_sensor_csv_fig(fig, csv_file)
+        latest = pd.to_datetime(df.index[-1], utc=True)
+    else:
+        print(f"Warning! {csv_file} is not found.")
+        latest = datetime.now(timezone.utc)
+
     if openweathermap_available:
-        fig = add_forecast_fig(fig, pd.to_datetime(df.index[-1], utc=True))
+        fig = add_forecast_fig(fig)
         offset = timedelta(days=1)
     else:
         offset = timedelta(days=0)
@@ -269,7 +280,7 @@ def create_fig(csv_file):
             y=1.06,
         ),
         xaxis=dict(
-            range=[df.index[-1] - timedelta(days=1), df.index[-1] + offset],
+            # range=[df.index[-1] - timedelta(days=1), df.index[-1] + offset],
             rangeslider=dict(
                 autorange=True,
             ),
